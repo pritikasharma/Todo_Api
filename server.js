@@ -1,27 +1,16 @@
 // create a new express server
 var express = require ('express');
+var bodyParser = require('body-parser');
 
 //env variable provided by HEROKU if running there, else setup port
 var PORT = process.env.PORT || 3000;
 var app = express();
+// MOdel is one todo item. Collection is the entire list
+var todos = [];
+var todoNextId = 1; 
 
-//TODO array - list with attributes
-// MOdel is 1 todo item. Collection is the entire list
-var todos = [{
-		id: 1,
-		description: 'Meet Rohit for lunch',
-		completed: false
-	}, 
-	{
-		id: 2,
-		description: 'Grocery shopping',
-		completed: false
-	}, 
-	{
-		id:3,
-		description: 'Get a massage',
-		completed: true
-	}]; 
+//parse any JSON requests
+app.use (bodyParser.json());
 
 //setup routes
 app.get ( '/', function (req, res) {
@@ -84,6 +73,27 @@ app.get ('/todos/:id', function (req, res){
 			}
 
 });
+
+
+//POST from user, add it to the todos array
+app.post ('/todos', function (req, res) { 
+
+		//body = JSON object
+		var body = req.body;
+		body.id = todoNextId++;
+
+		/*var todoItem = {
+			"id": todoNextId,
+			"description": body
+		}; */
+
+		todos.push (body);
+		
+		//shouldnt the todos be returned?
+		res.json(body);
+
+})
+
 
 // ASYNC: port# and callback function when everything is done
 app.listen( PORT, function (req, res) 
