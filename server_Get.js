@@ -1,17 +1,27 @@
 // create a new express server
 var express = require ('express');
-var bodyParser = require('body-parser');
-var _ = require('underscore');
 
 //env variable provided by HEROKU if running there, else setup port
 var PORT = process.env.PORT || 3000;
 var app = express();
-// MOdel is one todo item. Collection is the entire list
-var todos = [];
-var todoNextId = 1; 
 
-//parse any JSON requests
-app.use (bodyParser.json());
+//TODO array - list with attributes
+// MOdel is 1 todo item. Collection is the entire list
+var todos = [{
+		id: 1,
+		description: 'Meet Rohit for lunch',
+		completed: false
+	}, 
+	{
+		id: 2,
+		description: 'Grocery shopping',
+		completed: false
+	}, 
+	{
+		id:3,
+		description: 'Get a massage',
+		completed: true
+	}]; 
 
 //setup routes
 app.get ( '/', function (req, res) {
@@ -34,9 +44,7 @@ app.get ('/todos/:id', function (req, res){
 		//type of params is string
 		var todoId = parseInt(req.params.id, 10);
 		var i;
-
-		//* OPTION 3: underscore
-		var matchedTodo = _.findWhere (todos, { id: todoId} );
+		var matchedTodo;
 
 		//* OPTION 1: 
 		//todos array is 0 based index 
@@ -56,14 +64,14 @@ app.get ('/todos/:id', function (req, res){
 		//* OPTION 2: 
 		// can't short curcuit forEach, bound to arrays
 		
-		// todos.forEach ( function (todo, index) {
+		todos.forEach ( function (todo, index) {
 
-		// 	if( todo.id === todoId)
-		// 		{
-		// 			//match found 
-		// 			matchedTodo = todo;
-		// 		}
-		// });
+			if( todo.id === todoId)
+				{
+					//match found 
+					matchedTodo = todo;
+				}
+		});
 			
 			if (matchedTodo)
 			{ 
@@ -76,39 +84,6 @@ app.get ('/todos/:id', function (req, res){
 			}
 
 });
-
-
-//POST from user, add it to the todos array
-app.post ('/todos', function (req, res) { 
-
-	//body = JSON object
-	var body = req.body;
-	//pick only the description and completed fields, disregard all other
-	body = _.pick ( body, 'description', 'completed');
-
-	//add validation for the JSON object
-	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.length === 0)
-	{
-		//request can not be completed
-		return res.status(400).send();
-	}
-	
-	body.description = body.description.trim();
-
-	body.id = todoNextId++;
-
-	/*var todoItem = {
-		"id": todoNextId,
-		"description": body
-	}; */
-
-	todos.push (body);
-	
-	//shouldnt the todos be returned?
-	res.json(body);
-
-})
-
 
 // ASYNC: port# and callback function when everything is done
 app.listen( PORT, function (req, res) 
