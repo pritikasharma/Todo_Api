@@ -109,10 +109,30 @@ app.post ('/todos', function (req, res) {
 
 })
 
+// DELETE route /todos/:id
+app.delete ('/todos/:id', function (req,res) {
+	var body = req.body;
+
+	//find the item with the id and then remove from array
+	var todoId = parseInt(req.params.id, 10);
+	var matchedTodo = _.findWhere (todos, { id: todoId} );
+
+	if (matchedTodo)
+	{
+		//have found a match, delete and return the item
+		todos = _.without(todos, matchedTodo);
+		res.json(matchedTodo);
+	}
+	else
+	{
+		res.status(404).send('ID not found');
+	}
+
+})
+
 
 // ASYNC: port# and callback function when everything is done
-app.listen( PORT, function (req, res) 
-		{
-			//print to the command prompt
-			console.log (' * Express Server listening on port ' + PORT + ' !');
-		});
+app.listen( PORT, function (req, res) {
+	//print to the command prompt
+	console.log (' * Express Server listening on port ' + PORT + ' !');
+});
