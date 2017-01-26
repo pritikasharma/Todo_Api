@@ -78,14 +78,12 @@ app.get ('/todos/:id', function (req, res){
 });
 
 
-//POST from user, add it to the todos array
+//http POST from user, add it to the todos array
 app.post ('/todos', function (req, res) { 
 
-	//body = JSON object
-	var body = req.body;
 	//pick only the description and completed fields, disregard all other
-	body = _.pick ( body, 'description', 'completed');
-
+	var body = _.pick ( req.body, 'description', 'completed');
+	
 	//add validation for the JSON object
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.length === 0)
 	{
@@ -106,10 +104,9 @@ app.post ('/todos', function (req, res) {
 	
 	//shouldnt the todos be returned?
 	res.json(body);
-
 })
 
-// DELETE route /todos/:id
+// http DELETE route /todos/:id
 app.delete ('/todos/:id', function (req,res) {
 	var body = req.body;
 
@@ -127,6 +124,40 @@ app.delete ('/todos/:id', function (req,res) {
 	{
 		res.status(404).send('ID not found');
 	}
+
+})
+
+
+// http PUT allows updates to selected id
+app.put ('/todos/:id', function (req, res) {
+
+	//body will have the new value to update
+	var body = _.pick (req.body, 'description', 'completed');
+	var validAttributes = {};
+
+	var todoId = parseInt(req.params.id, 10);
+	var matchedTodo = _.findWhere (todos, { id: todoId} );
+
+	//validate the attributes - completed, if given
+	if (_.isBoolean(body.completed) && body.hasOwnProperty('completed'))
+	{
+		validAttributes.completed = body.completed;
+	} else if (body.hasOwnProperty('completed')) {	
+		// bad request 
+		res.status(404).send('ID not found');
+	} 
+
+	//valid desciption
+	if (_.isString(body.description) && body.hasOwnProperty('description')) {
+		validAttributes.description = body.description.trim();
+	} else if (body.hasOwnProperty('description')){
+			res.status(400).send(' No description given');
+	}	
+	
+	//shallow copy from source to destination - object by reference
+	_.extend (matchedTodo, validAttributes);
+
+	res.json(matchedTodo);
 
 })
 
