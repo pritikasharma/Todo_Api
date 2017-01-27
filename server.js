@@ -16,17 +16,34 @@ app.use (bodyParser.json());
 //setup routes
 app.get ( '/', function (req, res) {
 	  // send message back to client
-	  res.send (' TO Root API');
+	  res.send (' To Root API');
 	}
 	);
 
-//get all the todos
+//** get all the todos
 app.get ('/todos', function (req, res){
-		//need to convert the array to JSON since can only pass text back and forth
-		//res.send (' TODO list ' + JSON.stringify (todos));
-		res.json(todos);
-		
-	});
+	//need to convert the array to JSON since can only pass text back and forth
+	//res.send (' TODO list ' + JSON.stringify (todos));
+
+	//returns string, object with key value pair
+	var queryParam = req.query;
+	//set to the entire list
+	var matchedTodos = todos;
+
+	if (queryParam.completed === 'true' && queryParam.hasOwnProperty('completed')) {
+		matchedTodos = _.where (matchedTodos, {completed: true});
+	} else if (queryParam.completed == 'false' && queryParam.hasOwnProperty('completed')) {
+	 	matchedTodos = _.where (matchedTodos, {completed: false});
+	}
+
+	if (matchedTodos){ 
+		res.json(matchedTodos);
+	}
+	else {
+		//there was no match
+		res.status(404).send('ERROR: ID not found');
+	}
+});
 
 //get todo with :id param, express knows to parse the ID as request
 app.get ('/todos/:id', function (req, res){
@@ -65,15 +82,10 @@ app.get ('/todos/:id', function (req, res){
 		// 		}
 		// });
 			
-			if (matchedTodo)
-			{ 
-				res.json(matchedTodo);
-			}
-			else
-			{
-			//there was no match
-				res.status(404).send('ERROR: ID not found');
-			}
+	if (matchedTodo)
+		res.json(matchedTodo);
+	else
+		res.status(404).send('ERROR: ID not found');
 
 });
 
