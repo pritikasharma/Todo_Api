@@ -20,7 +20,7 @@ app.get ( '/', function (req, res) {
 	}
 	);
 
-//** get all the todos
+//** get all the todos?completed=false&q=work
 app.get ('/todos', function (req, res){
 	//need to convert the array to JSON since can only pass text back and forth
 	//res.send (' TODO list ' + JSON.stringify (todos));
@@ -29,11 +29,41 @@ app.get ('/todos', function (req, res){
 	var queryParam = req.query;
 	//set to the entire list
 	var matchedTodos = todos;
+	//var queryDescription = queryParam.q;
 
+	//look for completed and q query in the description
 	if (queryParam.completed === 'true' && queryParam.hasOwnProperty('completed')) {
 		matchedTodos = _.where (matchedTodos, {completed: true});
-	} else if (queryParam.completed == 'false' && queryParam.hasOwnProperty('completed')) {
+
+		if(queryParam.hasOwnProperty('q') && queryParam.q.length > 0)
+		{
+			console.log (' * TRUE- Matched TODO length' + matchedTodos.length);
+
+			matchedTodos = _.filter (matchedTodos, function (matchedItem) {
+								
+								//indexOf is case sensitive
+								if ( matchedItem.description.toLowerCase().indexOf(queryParam.q) > -1)
+									return true;
+								else
+									return false;
+							} );
+		}
+	} 
+	else if (queryParam.completed == 'false' && queryParam.hasOwnProperty('completed')) 
+	{
+
 	 	matchedTodos = _.where (matchedTodos, {completed: false});
+
+	 	if(queryParam.hasOwnProperty('q') && queryParam.q.length > 0)
+	 	{
+	 		matchedTodos = _.filter (matchedTodos, function (matchedItem)  {
+	 						//indexOf is case sensitive
+	 						if (matchedItem.description.toLowerCase().indexOf(queryParam.q) > -1) 
+	 							return true;
+	 						else
+	 							return false;
+	 					});
+	 	}
 	}
 
 	if (matchedTodos){ 
